@@ -38,7 +38,12 @@
     <div class="container">
       <div class="row">
 
-        <div class="col-lg-3"></div>
+        <div class="col-lg-3">
+          <ul class="list-group">
+              <li class="list-group-item active">Side Menu</li>
+              <li class="list-group-item"><a href="diagnosis.html" class="btn btn-info btn-block">Risk Factor Check</a></li>
+          </ul>
+        </div>
         <div class="col-lg-6">
           <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="index.html">Homepage</a></li>
@@ -76,24 +81,38 @@
           </table>
 
         </div>
-        <div class="col-lg-3"></div>
+        <div class="col-lg-3">
+
+        </div>
         </div>
       </div>
     </div>
 
 
 <script>
-var data = localStorage.getItem("patientInfo");
-$("#fname").empty().append(JSON.parse(data)[0]);
-$("#lname").empty().append(JSON.parse(data)[1]);
-$("#gender").empty().append(JSON.parse(data)[2]);
-$("#phone").empty().append(JSON.parse(data)[3]);
-$("#email").empty().append(JSON.parse(data)[4]);
-$("#address").empty().append(JSON.parse(data)[5]);
+  var data = localStorage.getItem("patientInfo");
+  $.ajax({
+           type: 'GET',
+           url: "http://127.0.0.1/MediblockAccountApi/register.php?username=Nnamdi&password=2000years@bc",
+           //contentType: 'application/json; charset=utf-8',
+           success: function(response) {
+               console.log(response);
+           },
+           error: function(error) {
+               console.log(error);
+           }
+       });
+
+  $("#fname").empty().append(JSON.parse(data)[0]);
+  $("#lname").empty().append(JSON.parse(data)[1]);
+  $("#gender").empty().append(JSON.parse(data)[2]);
+  $("#phone").empty().append(JSON.parse(data)[3]);
+  $("#email").empty().append(JSON.parse(data)[4]);
+  $("#address").empty().append(JSON.parse(data)[5]);
+
 //alert(localStorage.patientInfo[0]);
 //document.getElementById("gender").innerHTML = localStorage.lastname;
 </script>
-
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->

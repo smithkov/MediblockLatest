@@ -1,24 +1,9 @@
+var keys, encABC;
 App = {
   web3Provider: null,
   contracts: {},
 
   init: function() {
-    // Load pets.
-    // $.getJSON('../pets.json', function(data) {
-    //   var petsRow = $('#petsRow');
-    //   var petTemplate = $('#petTemplate');
-    //
-    //   for (i = 0; i < data.length; i ++) {
-    //     petTemplate.find('.panel-title').text(data[i].name);
-    //     petTemplate.find('img').attr('src', data[i].picture);
-    //     petTemplate.find('.pet-breed').text(data[i].breed);
-    //     petTemplate.find('.pet-age').text(data[i].age);
-    //     petTemplate.find('.pet-location').text(data[i].location);
-    //     petTemplate.find('.btn-adopt').attr('data-id', data[i].id);
-    //
-    //     petsRow.append(petTemplate.html());
-    //   }
-    // });
 
     return App.initWeb3();
   },
@@ -56,25 +41,9 @@ App = {
     $(document).on('click', '.btn-register', App.handleRegister);
     $(document).on('click', '.btn-patient', App.getPatient);
     $(document).on('click', '.btn-patient-login', App.getLogin);
+    $(document).on('click', '.btn-check-risk', App.checkRisk);
+    $(document).on('click', '.btn-decrypt', App.decrypt);
   },
-
-  // markAdopted: function(adopters, account) {
-  //   var adoptionInstance;
-  //
-  //   App.contracts.Adoption.deployed().then(function(instance) {
-  //     adoptionInstance = instance;
-  //
-  //     return adoptionInstance.getAdopters.call();
-  //   }).then(function(adopters) {
-  //     for (i = 0; i < adopters.length; i++) {
-  //       if (adopters[i] !== '0x0000000000000000000000000000000000000000') {
-  //         $('.panel-pet').eq(i).find('button').text('Success').attr('disabled', true);
-  //       }
-  //     }
-  //   }).catch(function(err) {
-  //     console.log(err.message);
-  //   });
-  // },
 
   getPatient: function(result, account) {
     var patientInstance;
@@ -87,11 +56,26 @@ App = {
         return patientInstance.getPatient.call(key);
       }).then(function(data) {
         console.log(data);
-        // for (i = 0; i < adopters.length; i++) {
-        //   if (adopters[i] !== '0x0000000000000000000000000000000000000000') {
-        //     $('.panel-pet').eq(i).find('button').text('Success').attr('disabled', true);
-        //   }
-        // }
+      }).catch(function(err) {
+        console.log(err.message);
+      });
+    })
+  },
+  decrypt: function(result, account) {
+    var resultInstance;
+    web3.eth.getAccounts(function(error, accounts) {
+        var getKey = JSON.parse(localStorage.getItem("myKey"));
+        var key = accounts[0];
+
+      App.contracts.Mediblock.deployed().then(function(instance) {
+        resultInstance = instance;
+       console.log(key);
+        return resultInstance.getPatientTest.call(localStorage.getItem("publicKey"));
+      }).then(function(data) {
+        getKey.sec.decrypt(encAB).toString(10);
+        $(".lblHash").empty().append("Encrypted Value: "+String(encABC)+"<br/>");
+        var mainData = JSON.parse(data);
+        $(".lblHash").append("Original Value: "+keys.sec.decrypt(encAB).toString(10));
       }).catch(function(err) {
         console.log(err.message);
       });
@@ -108,7 +92,9 @@ App = {
       }).then(function(data) {
 
         if(data.length>0){
+          localStorage.setItem("publicKey", key);
           localStorage.setItem("patientInfo", JSON.stringify(data));
+          console.log(data);
           window.location.href = "patientPersonalInfo.html";
         }
         else{
@@ -118,6 +104,82 @@ App = {
       }).catch(function(err) {
         console.log(err.message);
       });
+
+  },
+  checkRisk: function(result, account) {
+      $('.modal').modal('show');
+      var radioAlcohol =parseInt($('input[name=alcohol]:checked').val());
+      var radioSmoke = parseInt($('input[name=smoke]:checked').val());
+      var radioHistory = parseInt($('input[name=history]:checked').val());
+      var radioGall = parseInt($('input[name=gall]:checked').val());
+      var radioChemical = parseInt($('input[name=chemical]:checked').val());
+      var radioAflatoxin = parseInt($('input[name=aflatoxin]:checked').val());
+      inputValues = {
+        "alcohol":radioAlcohol,
+        "smoke":radioSmoke,
+        "history":radioHistory,
+        "gall":radioGall,
+        "chemical":radioChemical,
+        "aflatoxin":radioAflatoxin
+      };
+      localStorage.setItem("inputValues",JSON.stringify(inputValues));
+      //Below code is for pailliers computation (Additive Homomorphic encryption)
+      var secretKey,publicKey;
+      var encA, encB;
+
+      function generateKeys(){
+        var numBits =1024;
+        keys = paillier.generateKeys(numBits);
+  		  publicKey =keys.pub.n.toString();
+        secretKey = keys.sec.lambda.toString();
+      }
+      generateKeys();
+      //encrypt user input
+      var valA = (radioAlcohol+radioHistory+radioGall), valB = (radioSmoke+radioChemical+radioAflatoxin);
+    //  console.log("valA: "+ valA+" valB: "+valB)
+  		encA = keys.pub.encrypt(nbv(valA));
+  		encB = keys.pub.encrypt(nbv(valB));
+      //I am adding encrypted values at this points
+      encAB = keys.pub.add(encA,encB);
+      //I am ramdomnizing the added values at this point
+      encAB = keys.pub.randomize(encAB);
+      //I am multipying encAB value by 3000
+      encABC = keys.pub.mult(encAB,nbv(1));
+      //I am random multiplying
+      encABC = keys.pub.randomize(encABC);
+      //alert(encABC + " encrypted value :"+ keys.sec.decrypt(encABC).toString(10));
+      web3.eth.getAccounts(function(error, accounts) {
+          //var key = accounts[0];
+        if (error) {
+          console.log(error);
+        }
+
+        App.contracts.Mediblock.deployed().then(function(instance) {
+          resultInstance = instance;
+          var getKey = localStorage.getItem("publicKey");
+
+
+          localStorage.setItem("myKey", JSON.stringify(keys));
+        //  console.log(typeof encABC)
+
+          return resultInstance.setPatientResult(getKey,String(encABC));
+
+        }).then(function(result) {
+          console.log(result);
+          $('.modal').modal('hide');
+          var sum = (valA+valB);
+          localStorage.setItem("sum",sum);
+          if(sum > 5){
+            $("#img-wrapper").empty().html("<img src='images/high.gif'/><hr>")
+          }else{
+            $("#img-wrapper").empty().html("<img src='images/low.gif'/><hr>")
+          }
+          //return App.markAdopted();
+        }).catch(function(err) {
+          console.log(err.message);
+          $('.modal').modal('hide');
+        });
+        })
 
   },
 
