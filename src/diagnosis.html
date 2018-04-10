@@ -145,7 +145,7 @@
                     </label>
                     <hr>
                     <button type="button" class="btn btn-primary btn-check-risk">Check risk</button>
-                    <button type="button" class="btn btn-primary btn-decrypt">Show encrypted value</button>
+                    <button type="button" class="btn btn-default btn-decrypt">Show encrypted value</button>
             		</form>
               <!-- <button class="btn btn-default btn-patient" type="button" data-id="0">Patient</button> -->
           </div>
@@ -206,7 +206,7 @@
           // $("input[type=radio][name='"+name+"']").prop("checked", value===1?true:false);
           // if
        }
-       
+
        if(JSON.parse(localStorage.getItem("sum")) > 5){
          $("#img-wrapper").empty().html("<img src='images/high.gif'/><hr>")
        }else{

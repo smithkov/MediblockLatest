@@ -40,7 +40,7 @@ App = {
   bindEvents: function() {
     $(document).on('click', '.btn-register', App.handleRegister);
     $(document).on('click', '.btn-patient', App.getPatient);
-    $(document).on('click', '.btn-patient-login', App.getLogin);
+    $(document).on('click', '.btn-login', App.getLogin);
     $(document).on('click', '.btn-check-risk', App.checkRisk);
     $(document).on('click', '.btn-decrypt', App.decrypt);
   },
@@ -69,10 +69,13 @@ App = {
 
       App.contracts.Mediblock.deployed().then(function(instance) {
         resultInstance = instance;
-       console.log(key);
+
         return resultInstance.getPatientTest.call(localStorage.getItem("publicKey"));
       }).then(function(data) {
-        getKey.sec.decrypt(encAB).toString(10);
+        console.log("...........................");
+        console.log(data);
+          console.log("...........................");
+        keys.sec.decrypt(encAB).toString(10);
         $(".lblHash").empty().append("Encrypted Value: "+String(encABC)+"<br/>");
         var mainData = JSON.parse(data);
         $(".lblHash").append("Original Value: "+keys.sec.decrypt(encAB).toString(10));
@@ -83,7 +86,8 @@ App = {
   },
   getLogin: function(result, account) {
     var patientInstance;
-
+      var errorBox = $("#error-box");
+      var errorMsg =$("#error-msg");
       var key = $("#login-account").val();
 
       App.contracts.Mediblock.deployed().then(function(instance) {
@@ -98,7 +102,8 @@ App = {
           window.location.href = "patientPersonalInfo.html";
         }
         else{
-          alert("Key does not exist in the block!");
+          errorBox.show();
+          errorMsg.empty().html("Public key does not exist!");
         }
 
       }).catch(function(err) {
@@ -168,7 +173,7 @@ App = {
           console.log(result);
           $('.modal').modal('hide');
           var sum = (valA+valB);
-          localStorage.setItem("sum",sum);
+          localStorage.setItem("sum",JSON.stringify(sum));
           if(sum > 5){
             $("#img-wrapper").empty().html("<img src='images/high.gif'/><hr>")
           }else{
@@ -212,6 +217,7 @@ App = {
         return patientInstance.setPatient(eth_address,fname,lname,gender,phone,email,address,dob);
       }).then(function(result) {
         //return App.markAdopted();
+        alert("Record has been saved to blockchain!")
       }).catch(function(err) {
         console.log(err.message);
       });
